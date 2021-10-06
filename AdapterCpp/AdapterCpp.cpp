@@ -2,94 +2,98 @@
 //
 
 #include <iostream>
+#include <utility>
 
-class IEuSocket
+class EuSocket //This is a base class because it's virtual function has a body
 {
 public:
-	virtual	std::string give_eu_current() const
+	virtual ~EuSocket() = default;// why do I need virtual destructor?
+
+	virtual	std::string give_eu_current()
 	{
 		return "Default eu current \n";
 	}
-
 };
 
-class StandardEuSocket : public IEuSocket
+class StandardEuSocket : public EuSocket
 {
 public:
-	std::string give_eu_current() const
+	std::string give_eu_current()  override
 	{
-		return "current from EU socket \n";
-	} 
-};
-class IGbSocket
-{
-public:
-	virtual std::string give_gb_current() const
-	{
-		return "Default GB current \n";
+		return "current from EU socket";
 	}
 };
+class IGbSocket //This is an interface, because it has: virtual give_gb_current() = 0;
+{
+public:
+	virtual ~IGbSocket() = default;
+	virtual std::string give_gb_current() = 0;
+};
+
+
 class StandardGbSocket : public IGbSocket
 {
-	std::string give_gb_current() const
+public:
+
+	std::string give_gb_current() override
 	{
-		return "current from GB socket \n";
+		return "current from GB socket";
 	}
 };
 
-class GbToEuAdapter : public IEuSocket
+class GbToEuAdapter : public EuSocket
 {
 private:
-	IGbSocket* _gb_socket;
+	IGbSocket* gb_socket_;
 public:
 	explicit GbToEuAdapter(IGbSocket* gb_socket)
-		: _gb_socket(gb_socket)
+		: gb_socket_(gb_socket)
 	{
-		this->_gb_socket = gb_socket;
 	}
-	std::string give_eu_current() const
+
+	std::string give_eu_current() override
 	{
-		return _gb_socket->give_gb_current();
+		return "  (using adapter) " + gb_socket_->give_gb_current();
 	}
 
 };
+
 class Laptop
 {
 private:
-	std::string name;
+	const char* name_;
 public:
-	Laptop(std::string name)
-	{
-		this->name = name;
+	Laptop(const char* name) : name_(name) {
 	}
-	~Laptop() = default;
-	std::string get_name()
+
+	std::string get_name() const
 	{
-		return this->name;
+		return this->name_;
 	}
+
 };
 
-
-namespace Charger
+namespace charger
 {
-	void Charge(Laptop* laptop, IEuSocket& euSocket)
+	void charge(const Laptop* laptop, EuSocket& eu_socket)
 	{
-		std::cout << "Charging laptop: " << laptop->get_name() << ", with: " << euSocket.give_eu_current();
+		std::cout << "Charging Laptop: " << laptop->get_name() << ", with: " << eu_socket.give_eu_current() << std::endl;;
 
 	}
 }
 int main()
 {
 	/**
-	 *I am charging my laptop that has EU type of plug in a Standard EU socket *
+	 *I am charging my Laptop that has EU type of plug in a Standard EU socket *
 	 */
 
-	Laptop laptop = Laptop("Lenovo");
-	StandardEuSocket eu_Socket = StandardEuSocket();
-	Charger::Charge(&laptop, eu_Socket);
+	const Laptop laptop("Lenovo");
+
+	auto eu_socket = StandardEuSocket();
+	charger::charge(&laptop, eu_socket);
 
 	/**
-		  * I added GB type socket and want to charge my laptop that has a EU type plug.
+		  * I added GB type socket and want to charge my Laptop that has a EU type plug.
 		  *
 		  * The problem:
 		  * Without changing Charger class I need to make adjustments in program and
@@ -102,7 +106,9 @@ int main()
 		  * Then in my adapter class I can do what ever it takes to make the GB Socket class work with
 		  * my Charger exactly like my EU Socket class does.
 		  */
+	StandardGbSocket* gb_socket = new StandardGbSocket();
+	GbToEuAdapter gb_adapted = GbToEuAdapter(gb_socket);
+	charger::charge(&laptop, gb_adapted);
 
-	GbToEuAdapter gb_adapted = GbToEuAdapter(new StandardGbSocket());
-	Charger::Charge(&laptop, gb_adapted);
+	delete gb_socket;
 }
