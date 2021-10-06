@@ -98,9 +98,7 @@ int main()
 		  * Then in my adapter class I can do what ever it takes to make the GB Socket class work with
 		  * my Charger exactly like my EU Socket class does.
 		  */
-	StandardGbSocket* gb_socket = new StandardGbSocket();
-	GbToEuAdapter gb_adapted = GbToEuAdapter(gb_socket);
+	GbToEuAdapter gb_adapted = GbToEuAdapter(new StandardGbSocket());
 	charger::charge(&laptop, gb_adapted);
 
-	delete gb_socket;
 }
