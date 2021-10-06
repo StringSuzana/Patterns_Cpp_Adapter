@@ -1,21 +1,13 @@
-// AdapterCpp.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
-#include <utility>
 
-class EuSocket //This is a base class because it's virtual function has a body
+class IEuSocket //This is an interface, because it has: virtual give_gb_current() = 0;
 {
 public:
-	virtual ~EuSocket() = default;// why do I need virtual destructor?
-
-	virtual	std::string give_eu_current()
-	{
-		return "Default eu current \n";
-	}
+	virtual ~IEuSocket() = default;// why do I need virtual destructor?
+	virtual	std::string give_eu_current() = 0;
 };
 
-class StandardEuSocket : public EuSocket
+class StandardEuSocket : public IEuSocket
 {
 public:
 	std::string give_eu_current()  override
@@ -23,7 +15,7 @@ public:
 		return "current from EU socket";
 	}
 };
-class IGbSocket //This is an interface, because it has: virtual give_gb_current() = 0;
+class IGbSocket 
 {
 public:
 	virtual ~IGbSocket() = default;
@@ -41,7 +33,7 @@ public:
 	}
 };
 
-class GbToEuAdapter : public EuSocket
+class GbToEuAdapter : public IEuSocket
 {
 private:
 	IGbSocket* gb_socket_;
@@ -75,7 +67,7 @@ public:
 
 namespace charger
 {
-	void charge(const Laptop* laptop, EuSocket& eu_socket)
+	void charge(const Laptop* laptop, IEuSocket& eu_socket)
 	{
 		std::cout << "Charging Laptop: " << laptop->get_name() << ", with: " << eu_socket.give_eu_current() << std::endl;;
 
