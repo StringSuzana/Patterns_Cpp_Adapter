@@ -1,9 +1,11 @@
 #include <iostream>
-
-class IEuSocket //This is an interface, because it has: virtual give_gb_current() = 0;
+/**
+ * This is an interface, because it has PURE virtual function: virtual give_gb_current() = 0;
+ **/
+class IEuSocket
 {
 public:
-	virtual ~IEuSocket() = default;// why do I need virtual destructor?
+	virtual ~IEuSocket() = default;
 	virtual	std::string give_eu_current() = 0;
 };
 
@@ -18,6 +20,17 @@ public:
 class IGbSocket 
 {
 public:
+	/**
+	 *This 'virtual' lets the compiler know that when I instantiate like this: 
+	 *IGbSocket* socket = new StandardGbSocket(); Heavy polymorphism right here.
+	 *and then when I delete this object like so:
+	 *delete socket;
+	 *It will call both IGbSocket and StandardGbSocket destructor,
+	 *because with virtual I am actually letting the compiler know that this class can be
+	 *inherited and that it should look for another destructor ass well because if
+	 *I didn't have virtual and I called a destructor, it would just destruct IGbSocket.
+	 *The StandardGbSocket would now be a memory leak.
+	 */
 	virtual ~IGbSocket() = default;
 	virtual std::string give_gb_current() = 0;
 };
